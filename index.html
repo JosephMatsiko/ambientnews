@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>The Signal — AI News Intelligence</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,700;6..72,800&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<style>
+:root{--bg:#FAFAF7;--bg2:#F0EFE9;--card:#FFF;--bdr:#E2E0D8;--t1:#1A1917;--t2:#5A5850;--t3:#9A9890;--acc:#1a6fff;--serif:'Newsreader',Georgia,serif;--body:'DM Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace}
+@media(prefers-color-scheme:dark){:root{--bg:#111110;--bg2:#1C1C19;--card:#1A1A17;--bdr:#2C2C28;--t1:#EEEEE8;--t2:#9A9A90;--t3:#6A6A62;--acc:#5b9fff}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--t1);font-family:var(--body)}
+::selection{background:var(--acc);color:#fff}input:focus{outline:none;border-color:var(--t3)!important}button{font-family:inherit;cursor:pointer}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1)}}
+@keyframes newGlow{0%{box-shadow:0 0 0 0 #059669aa}70%{box-shadow:0 0 0 6px #05966900}100%{box-shadow:0 0 0 0 #05966900}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+var e=React.createElement,h=React.useState,ue=React.useEffect,uc=React.useCallback,ur=React.useRef;
+var CAT={Breaking:"#DC2626",World:"#2563EB",Politics:"#7C3AED",Science:"#059669",Markets:"#D97706",Tech:"#9333EA",Conflict:"#B91C1C",Health:"#0D9488",Climate:"#15803D",Other:"#6B7280"};
+var REFRESH=5*60*1000;
+
+var DEMO=[
+{id:1,headline:"Trump fires Attorney General Pam Bondi over Epstein files fallout",summary:"President Trump announced Pam Bondi's removal as AG on Truth Social. Deputy AG Todd Blanche will serve as acting attorney general. Bondi is the second cabinet member fired after Kristi Noem.",category:"Breaking",source:"CNN",importance:5,confidence:.97,sourceCount:12,keyPlayers:["Trump","Bondi","Blanche","Zeldin"],questions:["Who will replace her?","What happens to DOJ investigations?"]},
+{id:2,headline:"Trump addresses nation on Iran war, says objectives 'nearing completion'",summary:"In a televised address, Trump said the U.S. will hit Iran 'extremely hard' over the next 2-3 weeks. Oil prices surged 12% with WTI crude above $110/barrel.",category:"Conflict",source:"CBS News",importance:5,confidence:.95,sourceCount:10,keyPlayers:["Trump","Iran"],questions:["What are the military objectives?","How are oil prices affecting the economy?"]},
+{id:3,headline:"NASA Artemis II crew gets green light for translunar injection burn",summary:"The four Artemis II astronauts received NASA's 'go' for the engine firing toward the Moon \u2014 the first crewed lunar voyage in over 50 years.",category:"Science",source:"NASA",importance:5,confidence:.99,sourceCount:15,keyPlayers:["Reid Wiseman","Victor Glover","Christina Koch"],questions:["When will they reach the Moon?","What's different from Apollo?"]},
+{id:4,headline:"Iranian missile strikes Petah Tikva as Hezbollah launches 50+ rockets",summary:"An Iranian ballistic missile hit between residential and industrial areas in Petah Tikva, Israel. Hezbollah simultaneously fired over 50 rockets into northern Israel.",category:"Conflict",source:"Times of Israel",importance:4,confidence:.93,sourceCount:8,keyPlayers:["Israel","Iran","Hezbollah"],questions:["How is air defense performing?","International response?"]},
+{id:5,headline:"Supreme Court hears arguments on birthright citizenship order",summary:"Justices heard oral arguments on Trump's executive order restricting birthright citizenship. Several justices appeared skeptical.",category:"Politics",source:"SCOTUSblog",importance:4,confidence:.96,sourceCount:9,keyPlayers:["Barrett","Roberts","Trump"],questions:["Legal precedents?","When is ruling expected?"]},
+{id:6,headline:"Oil surges past $110 as markets digest Iran escalation",summary:"WTI crude jumped nearly 12% above $110/barrel. Energy and utilities led gains while consumer discretionary stocks were hammered.",category:"Markets",source:"TheStreet",importance:4,confidence:.94,sourceCount:7,keyPlayers:["Fed","Wall Street"],questions:["Inflation impact?","Which sectors benefit?"]},
+{id:7,headline:"Startups raised record $297B in Q1 2026 driven by AI mega-rounds",summary:"Global startup funding hit its highest quarterly total ever, but concentrated in a handful of giant AI deals.",category:"Tech",source:"TechCrunch",importance:3,confidence:.91,sourceCount:5,keyPlayers:["OpenAI","Anthropic","xAI"],questions:["Biggest raises?","Is this sustainable?"]},
+{id:8,headline:"France bans major Muslim gathering in Paris over security concerns",summary:"France's top police officer banned the 40th Annual Meeting of Muslims of France, citing security risks amid geopolitical tensions.",category:"World",source:"Al Jazeera",importance:3,confidence:.9,sourceCount:4,keyPlayers:["Patrice Faure"],questions:["Security concerns?","Community response?"]}
+];
+
+var DDIVE={background:"Pam Bondi served as the 87th Attorney General from Feb 2025 until April 2026. A longtime Trump loyalist confirmed 54-46. Her tenure was dominated by Epstein files controversy and politically motivated prosecutions.",timeline:[{date:"Feb 2025",event:"Confirmed as AG 54-46"},{date:"Feb 2025",event:"Claimed Epstein client list on desk"},{date:"Jul 2025",event:"DOJ: no client list exists"},{date:"Sep 2025",event:"Trump pressured Bondi publicly"},{date:"Feb 2026",event:"Contentious House hearing"},{date:"Apr 2 2026",event:"Fired by Trump"}],perspectives:[{view:"MAGA base",arg:"Failed on Epstein files, didn't prosecute enough opponents."},{view:"Democrats",arg:"Weaponized DOJ, damaged its independence."},{view:"Legal analysts",arg:"Federal judge threw out Comey and James cases."},{view:"DOJ insiders",arg:"Career prosecutors left en masse."}],implications:"Todd Blanche takes over. Lee Zeldin frontrunner. Bondi faces House subpoena April 14.",facts:["Second cabinet firing after Kristi Noem","Five Republicans voted to subpoena Bondi","'Dow is over 50,000' became instant meme","Judge tossed Comey and James cases","Wiles said Bondi 'whiffed' on Epstein"]};
+
+function LS(k,v){try{if(v===undefined)return JSON.parse(localStorage.getItem("sig_"+k));localStorage.setItem("sig_"+k,JSON.stringify(v))}catch(e){return null}}
+function extractJSON(r){if(!r)return null;var c=r.replace(/```json\s*/g,"").replace(/```\s*/g,"").trim();try{return JSON.parse(c)}catch(e){}var a=c.indexOf("["),b=c.lastIndexOf("]");if(a!==-1&&b>a)try{return JSON.parse(c.slice(a,b+1))}catch(e){}var x=c.indexOf("{"),y=c.lastIndexOf("}");if(x!==-1&&y>x)try{return JSON.parse(c.slice(x,y+1))}catch(e){}var m=c.indexOf("[{");if(m!==-1){var n=c.lastIndexOf("}]");if(n>m)try{return JSON.parse(c.slice(m,n+2))}catch(e){}}return null}
+async function callAI(key,sys,msg){var r=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:2048,system:sys,tools:[{type:"web_search_20250305",name:"web_search"}],messages:[{role:"user",content:msg}]})});if(!r.ok)throw new Error("API "+r.status);var d=await r.json();return(d.content||[]).filter(function(b){return b.type==="text"}).map(function(b){return b.text})}
+function timeAgo(ts){if(!ts)return"";var s=Math.floor((Date.now()-ts)/1000);if(s<60)return"just now";if(s<3600)return Math.floor(s/60)+"m ago";return Math.floor(s/3600)+"h ago"}
+function buildEntityMap(stories){var m={};stories.forEach(function(s,i){(s.keyPlayers||[]).forEach(function(p){if(!m[p])m[p]=[];if(m[p].indexOf(i)===-1)m[p].push(i)})});return m}
+function diffStories(newS,oldHeadlines){if(!oldHeadlines||!oldHeadlines.length)return newS.map(function(){return null});return newS.map(function(s){var found=false;oldHeadlines.forEach(function(h){if(h===s.headline)found=true});return found?null:"NEW"})}
+
+function Sec(p){return e("div",{style:Object.assign({marginBottom:28},p.bg?{padding:"16px 20px",borderRadius:10,background:"var(--bg2)",border:"1px solid var(--bdr)"}:{})},e("div",{style:{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",fontFamily:"var(--mono)",color:"var(--t3)",marginBottom:10}},p.label),p.children)}
+
+function App(){
+var _s=h(DEMO),stories=_s[0],setStories=_s[1];
+var _l=h(false),loading=_l[0],setLoading=_l[1];
+var _m=h("demo"),mode=_m[0],setMode=_m[1];
+var _cd=h(REFRESH),countdown=_cd[0],setCountdown=_cd[1];
+var _up=h(null),lastUpdated=_up[0],setLastUpdated=_up[1];
+var _sel=h(null),selected=_sel[0],setSelected=_sel[1];
+var _div=h(null),dive=_div[0],setDive=_div[1];
+var _dl=h(false),diveLoad=_dl[0],setDiveLoad=_dl[1];
+var _ms=h([]),msgs=_ms[0],setMsgs=_ms[1];
+var _q=h(""),q=_q[0],setQ=_q[1];
+var _qb=h(false),qBusy=_qb[0],setQBusy=_qb[1];
+var _f=h("All"),filter=_f[0],setFilter=_f[1];
+var _st=h(function(){return LS("stars")||{}}),stars=_st[0],setStars=_st[1];
+var _tb=h("feed"),tab=_tb[0],setTab=_tb[1];
+var _sp=h(false),speaking=_sp[0],setSpeaking=_sp[1];
+var _sts=h(null),status=_sts[0],setStatus=_sts[1];
+var _ss=h(false),showSettings=_ss[0],setShowSettings=_ss[1];
+var _ak=h(function(){return LS("key")||""}),apiKey=_ak[0],setApiKey=_ak[1];
+var _bf=h([]),badges=_bf[0],setBadges=_bf[1];
+var _now=h(Date.now()),now=_now[0],setNow=_now[1];
+var chatEnd=ur(null);
+
+var saveKey=function(k){setApiKey(k);LS("key",k)};
+var saveStar=function(s){setStars(function(p){var n=Object.assign({},p);if(n[s.headline])delete n[s.headline];else n[s.headline]=s;LS("stars",n);return n})};
+var today=function(){return new Date().toLocaleDateString("en-US",{weekday:"long",year:"numeric",month:"long",day:"numeric"})};
+var entityMap=buildEntityMap(stories);
+
+ue(function(){var t=setInterval(function(){setCountdown(function(p){return Math.max(0,p-1000)});setNow(Date.now())},1000);return function(){clearInterval(t)}},[]);
+
+var goLive=uc(async function(){
+if(!apiKey){setShowSettings(true);return}setMode("live");setLoading(true);setStatus(null);
+try{var blocks=await callAI(apiKey,"You are a news JSON API. Your final text must be ONLY a JSON array. No prose.",
+"Today is "+today()+". Search for the most important news right now. Return ONLY a JSON array of 6-8 stories: [{\"id\":1,\"headline\":\"...\",\"summary\":\"2-3 sentences\",\"category\":\"Breaking|World|Politics|Science|Markets|Tech|Conflict|Health|Climate|Other\",\"source\":\"outlet\",\"importance\":5,\"confidence\":0.9,\"sourceCount\":5,\"keyPlayers\":[\"name\"],\"questions\":[\"q1\"]}]");
+var parsed=null;for(var i=blocks.length-1;i>=0;i--){parsed=extractJSON(blocks[i]);if(parsed&&Array.isArray(parsed)&&parsed.length>0)break;parsed=null}
+if(!parsed)parsed=extractJSON(blocks.join("\n"));
+if(parsed&&Array.isArray(parsed)&&parsed.length>0){
+var oldH=LS("prevHeadlines")||[];
+var b=diffStories(parsed,oldH);setBadges(b);
+LS("prevHeadlines",parsed.map(function(s){return s.headline}));
+setStories(parsed);setLastUpdated(Date.now());
+setStatus({t:"ok",m:"Live: "+parsed.length+" stories loaded"})}
+else{setStatus({t:"w",m:"Parse issue \u2014 preview: "+blocks.map(function(b){return b.slice(0,50)}).join(" | ")});setMode("demo");setStories(DEMO)}
+}catch(ex){setStatus({t:"w",m:"Error: "+ex.message});setMode("demo");setStories(DEMO)}
+setLoading(false);setCountdown(REFRESH)},[apiKey]);
+
+ue(function(){if(mode!=="live")return;var t=setInterval(function(){goLive()},REFRESH);return function(){clearInterval(t)}},[mode,goLive]);
+
+var openStory=async function(s){setSelected(s);setDive(null);setMsgs([]);setDiveLoad(true);
+if(mode==="demo"){setDive(s.id===1?DDIVE:{background:s.summary,timeline:[],perspectives:[],facts:[],implications:"Tap Go Live for real-time deep dives."});setDiveLoad(false);return}
+try{var bl=await callAI(apiKey,"Research JSON API. Respond ONLY with JSON.","Research: \""+s.headline+"\". Return JSON: {\"background\":\"3-4 sentences\",\"timeline\":[{\"date\":\"...\",\"event\":\"...\"}],\"perspectives\":[{\"view\":\"name\",\"arg\":\"argument\"}],\"implications\":\"string\",\"facts\":[\"fact\"]}");
+var d=null;for(var i=bl.length-1;i>=0;i--){d=extractJSON(bl[i]);if(d&&!Array.isArray(d))break;d=null}
+setDive(d||{background:bl.join("\n"),timeline:[],perspectives:[],facts:[]})}catch(ex){setDive({background:"Could not load: "+ex.message,timeline:[],perspectives:[],facts:[]})}setDiveLoad(false)};
+
+var ask=async function(){if(!q.trim()||qBusy)return;var question=q;setQ("");setQBusy(true);
+setMsgs(function(p){return p.concat([{r:"u",t:question}])});
+if(mode==="demo"){setTimeout(function(){setMsgs(function(p){return p.concat([{r:"a",t:"Demo mode. Go Live for real-time AI."}])});setQBusy(false)},500);return}
+try{var bl=await callAI(apiKey,"Concise intelligence analyst. 2-3 paragraphs.","Story: \""+selected.headline+"\". Question: \""+question+"\". Search and answer.");
+setMsgs(function(p){return p.concat([{r:"a",t:bl.join("\n\n")||"No response"}])})}catch(ex){setMsgs(function(p){return p.concat([{r:"a",t:"Error: "+ex.message}])})}setQBusy(false)};
+
+ue(function(){if(chatEnd.current)chatEnd.current.scrollIntoView({behavior:"smooth"})},[msgs]);
+
+var playAudio=function(){try{if(!window.speechSynthesis)return;if(speaking){window.speechSynthesis.cancel();setSpeaking(false);return}setSpeaking(true);
+var hr=new Date().getHours();var greet=hr<12?"Good morning":"Good afternoon";
+var u=new SpeechSynthesisUtterance(greet+". Here's your intelligence briefing for "+today()+". "+stories.slice(0,5).map(function(s,i){return"Story "+(i+1)+". "+s.headline+". "+s.summary}).join(". . . ")+". . . That's your briefing. Tap any story to go deeper.");
+u.rate=1;u.onend=function(){setSpeaking(false)};u.onerror=function(){setSpeaking(false)};window.speechSynthesis.speak(u)}catch(ex){setSpeaking(false)}};
+
+var cats=["All"].concat(Array.from(new Set(stories.map(function(s){return s.category}))));
+var shown=tab==="stars"?Object.values(stars):filter==="All"?stories:stories.filter(function(s){return s.category===filter});
+var mins=Math.floor(countdown/60000),secs=Math.floor((countdown%60000)/1000);
+
+function entityInfo(player,storyIdx){var indices=entityMap[player];if(!indices||indices.length<2)return null;var others=indices.filter(function(i){return i!==storyIdx});if(!others.length)return null;return others.length+" other stor"+(others.length===1?"y":"ies")}
+
+return e("div",{style:{minHeight:"100vh"}},
+e("div",{style:{maxWidth:920,margin:"0 auto",padding:"0 20px"}},
+
+e("header",{style:{padding:"28px 0 18px",borderBottom:"2px solid var(--t1)"}},
+e("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:12}},
+e("div",null,
+e("div",{style:{fontSize:9,fontWeight:700,letterSpacing:".25em",textTransform:"uppercase",color:"var(--t3)",fontFamily:"var(--mono)",marginBottom:3}},"AI INTELLIGENCE PLATFORM"),
+e("h1",{style:{fontSize:38,fontWeight:800,margin:0,lineHeight:1,letterSpacing:"-.02em",fontFamily:"var(--serif)"}},"The Signal")),
+e("div",{style:{textAlign:"right"}},
+e("div",{style:{fontSize:12,color:"var(--t2)",fontFamily:"var(--mono)",marginBottom:6}},today()),
+e("div",{style:{display:"flex",gap:6,justifyContent:"flex-end",alignItems:"center"}},
+lastUpdated?e("span",{style:{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)"}},"Updated "+timeAgo(lastUpdated)):null,
+mode==="live"?e("span",{style:{fontSize:9,color:"var(--t3)",fontFamily:"var(--mono)",background:"var(--bg2)",padding:"2px 6px",borderRadius:4}},mins+":"+String(secs).padStart(2,"0")):null,
+e("button",{onClick:function(){setShowSettings(true)},style:{fontSize:10,padding:"4px 10px",borderRadius:4,border:"1px solid var(--bdr)",background:"none",color:"var(--t3)",fontFamily:"var(--mono)"}},"Settings"),
+mode==="demo"?e("button",{onClick:goLive,disabled:loading,style:{fontSize:11,padding:"5px 16px",borderRadius:6,border:"none",background:"var(--acc)",color:"#fff",fontWeight:600,fontFamily:"var(--mono)"}},loading?"Connecting...":"Go Live"):
+e("button",{onClick:goLive,disabled:loading,style:{fontSize:11,padding:"4px 12px",borderRadius:4,border:"1px solid var(--bdr)",background:"none",color:"var(--t2)",fontFamily:"var(--mono)"}},loading?"...":"Refresh")))),
+
+e("div",{style:{display:"flex",gap:6,marginTop:16,alignItems:"center",flexWrap:"wrap"}},
+e("button",{onClick:function(){setTab("feed")},style:{padding:"5px 16px",borderRadius:20,fontSize:12,fontWeight:600,fontFamily:"var(--mono)",border:tab==="feed"?"1px solid var(--t1)":"1px solid var(--bdr)",background:tab==="feed"?"var(--t1)":"none",color:tab==="feed"?"var(--bg)":"var(--t2)"}},"Live feed"),
+e("button",{onClick:function(){setTab("stars")},style:{padding:"5px 16px",borderRadius:20,fontSize:12,fontWeight:600,fontFamily:"var(--mono)",border:tab==="stars"?"1px solid var(--t1)":"1px solid var(--bdr)",background:tab==="stars"?"var(--t1)":"none",color:tab==="stars"?"var(--bg)":"var(--t2)"}},"Watchlist ("+Object.keys(stars).length+")"),
+mode==="demo"?e("span",{style:{fontSize:10,padding:"3px 10px",borderRadius:12,background:"#D9770618",color:"#D97706",fontWeight:600,border:"1px solid #D9770625",fontFamily:"var(--mono)"}},"Demo"):null,
+e("div",{style:{marginLeft:"auto",display:"flex",gap:10,alignItems:"center"}},
+e("button",{onClick:playAudio,style:{padding:"5px 16px",borderRadius:20,fontSize:12,fontWeight:600,fontFamily:"var(--mono)",border:"1px solid var(--bdr)",background:speaking?"#DC2626":"none",color:speaking?"#fff":"var(--t2)"}},speaking?"Stop":"Play briefing"),
+e("span",{style:{display:"flex",alignItems:"center",gap:4,fontSize:10,fontWeight:700,fontFamily:"var(--mono)",color:mode==="live"?"#059669":"#D97706"}},
+e("span",{style:{width:6,height:6,borderRadius:"50%",background:mode==="live"?"#059669":"#D97706",animation:"blink 2s infinite"}}),mode==="live"?"LIVE":"DEMO")))),
+
+status?e("div",{style:{padding:"8px 14px",borderRadius:6,margin:"10px 0",fontSize:11,fontFamily:"var(--mono)",background:status.t==="ok"?"#05966910":"#D9770610",color:status.t==="ok"?"#059669":"#D97706",border:"1px solid "+(status.t==="ok"?"#05966925":"#D9770625")}},status.m):null,
+
+tab==="feed"?e("div",{style:{display:"flex",gap:5,padding:"12px 0",flexWrap:"wrap"}},cats.map(function(c){var col=CAT[c]||"var(--t1)";return e("button",{key:c,onClick:function(){setFilter(c)},style:{padding:"3px 12px",borderRadius:14,fontSize:11,fontWeight:500,fontFamily:"var(--mono)",border:"1px solid "+(filter===c?col+"55":"var(--bdr)"),background:filter===c?col+"12":"none",color:filter===c?col:"var(--t3)"}},c)})):null,
+
+e("main",{style:{padding:"10px 0 48px"}},
+shown.length===0?e("div",{style:{textAlign:"center",padding:60,color:"var(--t3)",fontSize:13}},tab==="stars"?"Star stories to track them.":"No stories."):
+e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}},
+shown.map(function(s,i){var col=CAT[s.category]||"#6B7280";var lead=i===0&&tab==="feed"&&(s.importance||3)>=4;var badge=badges[i];
+return e("div",{key:s.id||i,style:{gridColumn:lead?"1/-1":undefined,animation:"fadeIn .4s ease both "+i*.06+"s"}},
+e("div",{onClick:function(){openStory(s)},style:{padding:"20px 24px",borderRadius:12,cursor:"pointer",background:"var(--card)",border:"1px solid var(--bdr)",position:"relative",animation:badge==="NEW"?"newGlow 2s ease 1":"none"}},
+(s.importance||3)>=5?e("div",{style:{position:"absolute",top:0,left:0,right:0,height:2.5,background:col,borderRadius:"12px 12px 0 0"}}):null,
+e("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:10,flexWrap:"wrap"}},
+e("span",{style:{fontSize:10,fontWeight:700,letterSpacing:".06em",textTransform:"uppercase",fontFamily:"var(--mono)",color:col,background:col+"10",padding:"2px 8px",borderRadius:4}},s.category),
+badge?e("span",{style:{fontSize:9,fontWeight:700,fontFamily:"var(--mono)",color:"#fff",background:"#059669",padding:"1px 6px",borderRadius:3}},badge):null,
+e("span",{style:{fontSize:10,fontFamily:"var(--mono)",color:(s.confidence||.85)>=.9?"#059669":"#D97706"}},Math.round((s.confidence||.85)*100)+"% verified"),
+e("span",{style:{fontSize:10,fontFamily:"var(--mono)",color:"var(--t3)"}},(s.sourceCount||3)+"+ sources"),
+e("button",{onClick:function(ev){ev.stopPropagation();saveStar(s)},style:{marginLeft:"auto",background:"none",border:"none",fontSize:15,padding:0,lineHeight:1,color:stars[s.headline]?"#D97706":"var(--t3)"}},stars[s.headline]?"\u2605":"\u2606")),
+e("h3",{style:{fontSize:lead?22:17,fontWeight:700,lineHeight:1.3,margin:"0 0 8px",fontFamily:"var(--serif)"}},s.headline),
+e("p",{style:{fontSize:14,lineHeight:1.65,color:"var(--t2)",margin:"0 0 10px"}},s.summary),
+e("div",{style:{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}},
+(s.keyPlayers||[]).slice(0,4).map(function(p,j){var info=entityInfo(p,i);return e("span",{key:j,style:{fontSize:10,padding:"2px 8px",borderRadius:4,background:info?"#2563EB10":"var(--bg2)",color:info?"#2563EB":"var(--t3)",fontFamily:"var(--mono)",border:info?"1px solid #2563EB20":"none"},title:info?"Also mentioned in "+info:""},p+(info?" \u00b7"+info:""))}),
+s.source?e("span",{style:{fontSize:10,color:"var(--t3)",marginLeft:"auto",fontFamily:"var(--mono)"}},"via "+s.source):null)))}))),
+
+e("footer",{style:{padding:"16px 0",borderTop:"1px solid var(--bdr)",display:"flex",justifyContent:"space-between",fontSize:10,color:"var(--t3)",fontFamily:"var(--mono)"}},
+e("span",null,"The Signal v2 \u2014 Powered by Claude"),
+e("span",null,stories.length+" stories"+Object.keys(stars).length?" \u00b7 "+Object.keys(stars).length+" tracked":""))),
+
+showSettings?e("div",{onClick:function(ev){if(ev.target===ev.currentTarget)setShowSettings(false)},style:{position:"fixed",inset:0,zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,.4)"}},
+e("div",{style:{background:"var(--bg)",borderRadius:16,padding:32,width:"100%",maxWidth:440,border:"1px solid var(--bdr)"}},
+e("h3",{style:{fontSize:18,fontWeight:700,fontFamily:"var(--serif)",margin:"0 0 4px"}},"Settings"),
+e("p",{style:{fontSize:13,color:"var(--t2)",margin:"0 0 20px"}},"Your API key stays in this browser only. Never sent to any server except Anthropic directly."),
+e("label",{style:{fontSize:11,fontWeight:600,fontFamily:"var(--mono)",color:"var(--t3)",display:"block",marginBottom:6}},"Anthropic API Key"),
+e("input",{value:apiKey,onChange:function(ev){saveKey(ev.target.value)},placeholder:"sk-ant-...",type:"password",style:{width:"100%",padding:"10px 14px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg2)",fontSize:14,color:"var(--t1)",fontFamily:"var(--mono)",marginBottom:8}}),
+e("div",{style:{fontSize:11,color:"var(--t3)",marginBottom:16}},"Get your key from console.anthropic.com \u2192 API Keys"),
+e("div",{style:{display:"flex",gap:8,justifyContent:"flex-end"}},
+e("button",{onClick:function(){saveKey("");setMode("demo");setStories(DEMO);setShowSettings(false)},style:{padding:"8px 16px",borderRadius:8,border:"1px solid var(--bdr)",background:"none",color:"var(--t2)",fontSize:12,fontFamily:"var(--mono)"}},"Clear"),
+e("button",{onClick:function(){setShowSettings(false);if(apiKey)goLive()},style:{padding:"8px 20px",borderRadius:8,border:"none",background:"var(--acc)",color:"#fff",fontWeight:600,fontSize:12,fontFamily:"var(--mono)"}},apiKey?"Save & Go Live":"Close")))):null,
+
+selected?e("div",{onClick:function(ev){if(ev.target===ev.currentTarget)setSelected(null)},style:{position:"fixed",inset:0,zIndex:100,display:"flex",justifyContent:"center",background:"rgba(0,0,0,.5)"}},
+e("div",{style:{width:"100%",maxWidth:780,background:"var(--bg)",overflowY:"auto",display:"flex",flexDirection:"column"}},
+e("div",{style:{padding:"22px 30px 16px",borderBottom:"1px solid var(--bdr)",position:"sticky",top:0,background:"var(--bg)",zIndex:2}},
+e("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:12}},
+e("span",{style:{fontSize:10,fontWeight:700,letterSpacing:".06em",textTransform:"uppercase",fontFamily:"var(--mono)",color:CAT[selected.category]||"#6B7280",background:(CAT[selected.category]||"#6B7280")+"10",padding:"2px 8px",borderRadius:4}},selected.category),
+e("span",{style:{fontSize:10,fontFamily:"var(--mono)",color:"#059669"}},Math.round((selected.confidence||.85)*100)+"%"),
+e("button",{onClick:function(){setSelected(null)},style:{marginLeft:"auto",fontSize:11,padding:"4px 14px",borderRadius:6,border:"1px solid var(--bdr)",background:"none",color:"var(--t2)",fontFamily:"var(--mono)"}},"Close")),
+e("h2",{style:{fontSize:24,fontWeight:800,lineHeight:1.25,margin:0,fontFamily:"var(--serif)"}},selected.headline)),
+e("div",{style:{flex:1,padding:"22px 30px",overflowY:"auto"}},
+diveLoad?e("div",{style:{textAlign:"center",padding:48}},e("div",{style:{width:20,height:20,border:"2px solid var(--bdr)",borderTopColor:"var(--t2)",borderRadius:"50%",animation:"spin .7s linear infinite",margin:"0 auto 12px"}}),e("span",{style:{fontSize:12,color:"var(--t3)",fontFamily:"var(--mono)"}},"Researching...")):
+dive?e(React.Fragment,null,
+dive.background?e(Sec,{label:"Background"},e("p",{style:{fontSize:15,lineHeight:1.75,margin:0}},dive.background)):null,
+dive.facts&&dive.facts.length>0?e(Sec,{label:"Key facts",bg:true},dive.facts.map(function(f,i){return e("div",{key:i,style:{display:"flex",gap:8,marginBottom:5,fontSize:14,lineHeight:1.55}},e("span",{style:{color:CAT[selected.category]||"#6B7280",fontWeight:700}},"\u2014"),f)})):null,
+dive.timeline&&dive.timeline.length>0?e(Sec,{label:"Timeline"},dive.timeline.map(function(t,i){return e("div",{key:i,style:{display:"flex",gap:12,marginBottom:10,paddingLeft:12,borderLeft:"2px solid "+(CAT[selected.category]||"#6B7280")+"30"}},e("span",{style:{fontSize:11,fontWeight:600,fontFamily:"var(--mono)",color:CAT[selected.category]||"#6B7280",minWidth:80,flexShrink:0}},t.date),e("span",{style:{fontSize:14,lineHeight:1.55}},t.event))})):null,
+dive.perspectives&&dive.perspectives.length>0?e(Sec,{label:"Perspectives"},e("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}},dive.perspectives.map(function(p,i){return e("div",{key:i,style:{padding:"14px 16px",borderRadius:10,background:"var(--bg2)",border:"1px solid var(--bdr)"}},e("div",{style:{fontSize:12,fontWeight:600,fontFamily:"var(--mono)",color:CAT[selected.category]||"#6B7280",marginBottom:5}},p.view||p.viewpoint),e("div",{style:{fontSize:13,lineHeight:1.55,color:"var(--t2)"}},p.arg||p.argument))}))):null,
+dive.implications?e("div",{style:{marginBottom:28,padding:"16px 20px",borderRadius:10,borderLeft:"3px solid "+(CAT[selected.category]||"#6B7280"),background:(CAT[selected.category]||"#6B7280")+"08"}},e("div",{style:{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",fontFamily:"var(--mono)",color:CAT[selected.category]||"#6B7280",marginBottom:8}},"What this means"),e("p",{style:{fontSize:14,lineHeight:1.65,margin:0}},dive.implications)):null,
+selected.questions&&selected.questions.length>0?e("div",{style:{marginBottom:20}},e("div",{style:{fontSize:10,fontWeight:700,letterSpacing:".1em",textTransform:"uppercase",fontFamily:"var(--mono)",color:"var(--t3)",marginBottom:8}},"Go deeper"),e("div",{style:{display:"flex",gap:8,flexWrap:"wrap"}},selected.questions.map(function(qn,i){return e("button",{key:i,onClick:function(){setQ(qn)},style:{fontSize:12,padding:"6px 14px",borderRadius:20,background:"var(--bg2)",border:"1px solid var(--bdr)",color:"var(--t2)"}},qn)}))):null
+):null,
+msgs.map(function(m,i){return e("div",{key:i,style:{marginBottom:12,display:"flex",justifyContent:m.r==="u"?"flex-end":"flex-start"}},e("div",{style:{maxWidth:"85%",padding:"11px 16px",borderRadius:12,fontSize:14,lineHeight:1.65,whiteSpace:"pre-wrap",background:m.r==="u"?(CAT[selected.category]||"#6B7280")+"12":"var(--bg2)",border:"1px solid "+(m.r==="u"?(CAT[selected.category]||"#6B7280")+"28":"var(--bdr)")}},m.t))}),
+qBusy?e("div",{style:{display:"flex",gap:4,padding:10}},[0,1,2].map(function(i){return e("div",{key:i,style:{width:6,height:6,borderRadius:"50%",background:"var(--t3)",animation:"pulse 1s "+i*.15+"s infinite"}})})):null,
+e("div",{ref:chatEnd})),
+e("div",{style:{padding:"12px 30px 16px",borderTop:"1px solid var(--bdr)",display:"flex",gap:8,background:"var(--bg)"}},
+e("input",{value:q,onChange:function(ev){setQ(ev.target.value)},onKeyDown:function(ev){if(ev.key==="Enter")ask()},placeholder:"Ask anything about this story...",style:{flex:1,padding:"10px 14px",borderRadius:8,border:"1px solid var(--bdr)",background:"var(--bg2)",fontSize:14,color:"var(--t1)"}}),
+e("button",{onClick:ask,disabled:qBusy,style:{padding:"10px 20px",borderRadius:8,border:"none",fontWeight:600,fontSize:13,fontFamily:"var(--mono)",background:CAT[selected.category]||"#6B7280",color:"#fff",opacity:qBusy?.5:1}},"Ask")))):null)}
+
+ReactDOM.createRoot(document.getElementById("root")).render(e(App));
+</script>
+</body>
+</html>
