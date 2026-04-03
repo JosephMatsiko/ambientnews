@@ -88,7 +88,7 @@ for(var i=blocks.length-1;i>=0;i--){parsed=extractJSON(blocks[i]);if(parsed&&Arr
 if(!parsed){parsed=extractJSON(blocks.join("\n"))}
 if(!parsed){var allText=blocks.join(" ");var re=/\[\s*\{[\s\S]*\}\s*\]/g;var match=allText.match(re);if(match){for(var j=match.length-1;j>=0;j--){parsed=extractJSON(match[j]);if(parsed&&Array.isArray(parsed)&&parsed.length>0)break;parsed=null}}}
 if(parsed&&Array.isArray(parsed)&&parsed.length>0){
-parsed=parsed.map(function(s,i){return{id:s.id||i+1,headline:s.headline||"Untitled",summary:s.summary||"",category:CAT[s.category]?s.category:"Other",source:s.source||"",importance:s.importance||3,confidence:s.confidence||0.8,sourceCount:s.sourceCount||3,keyPlayers:s.keyPlayers||[],questions:s.questions||[]}});
+parsed=parsed.map(function(s,i){var clean=function(t){return(t||"").replace(/<\/?cite[^>]*>/gi,"").replace(/<\/?[a-z][^>]*>/gi,"").trim()};return{id:s.id||i+1,headline:clean(s.headline)||"Untitled",summary:clean(s.summary)||"",category:CAT[s.category]?s.category:"Other",source:clean(s.source)||"",importance:s.importance||3,confidence:s.confidence||0.8,sourceCount:s.sourceCount||3,keyPlayers:(s.keyPlayers||[]).map(clean),questions:(s.questions||[]).map(clean)}});
 var oldH=LS("prevHeadlines")||[];
 var b=diffStories(parsed,oldH);setBadges(b);
 LS("prevHeadlines",parsed.map(function(s){return s.headline}));
@@ -102,22 +102,27 @@ ue(function(){if(mode!=="live")return;var t=setInterval(function(){goLive()},REF
 
 var openStory=async function(s){setSelected(s);setDive(null);setMsgs([]);setDiveLoad(true);
 if(mode==="demo"){setDive(s.id===1?DDIVE:{background:s.summary,timeline:[],perspectives:[],facts:[],implications:"Tap Go Live for real-time deep dives."});setDiveLoad(false);return}
-try{var bl=await callAI(apiKey,"Research JSON API. Respond ONLY with JSON.","Research: \""+s.headline+"\". Return JSON: {\"background\":\"3-4 sentences\",\"timeline\":[{\"date\":\"...\",\"event\":\"...\"}],\"perspectives\":[{\"view\":\"name\",\"arg\":\"argument\"}],\"implications\":\"string\",\"facts\":[\"fact\"]}");
+try{var bl=await callAI(apiKey,"You are a research JSON API. Respond with ONLY valid JSON. Never include HTML tags, citation tags, or markdown in your values. Plain text only.","Research: \""+s.headline+"\". Return JSON: {\"background\":\"3-4 sentences of plain text\",\"timeline\":[{\"date\":\"...\",\"event\":\"...\"}],\"perspectives\":[{\"view\":\"name\",\"arg\":\"argument\"}],\"implications\":\"plain text string\",\"facts\":[\"fact as plain text\"]}");
 var d=null;for(var i=bl.length-1;i>=0;i--){d=extractJSON(bl[i]);if(d&&!Array.isArray(d))break;d=null}
-setDive(d||{background:bl.join("\n"),timeline:[],perspectives:[],facts:[]})}catch(ex){setDive({background:"Could not load: "+ex.message,timeline:[],perspectives:[],facts:[]})}setDiveLoad(false)};
+if(d){var cl=function(t){return(t||"").replace(/<\/?[a-z][^>]*>/gi,"").trim()};d.background=cl(d.background);d.implications=cl(d.implications);d.facts=(d.facts||[]).map(cl);d.timeline=(d.timeline||[]).map(function(t){return{date:cl(t.date),event:cl(t.event)}});d.perspectives=(d.perspectives||[]).map(function(p){return{view:cl(p.view||p.viewpoint),arg:cl(p.arg||p.argument)}})}
+setDive(d||{background:bl.join("\n").replace(/<\/?[a-z][^>]*>/gi,""),timeline:[],perspectives:[],facts:[]})}catch(ex){setDive({background:"Could not load: "+ex.message,timeline:[],perspectives:[],facts:[]})}setDiveLoad(false)};
 
 var ask=async function(){if(!q.trim()||qBusy)return;var question=q;setQ("");setQBusy(true);
 setMsgs(function(p){return p.concat([{r:"u",t:question}])});
 if(mode==="demo"){setTimeout(function(){setMsgs(function(p){return p.concat([{r:"a",t:"Demo mode. Go Live for real-time AI."}])});setQBusy(false)},500);return}
-try{var bl=await callAI(apiKey,"Concise intelligence analyst. 2-3 paragraphs.","Story: \""+selected.headline+"\". Question: \""+question+"\". Search and answer.");
-setMsgs(function(p){return p.concat([{r:"a",t:bl.join("\n\n")||"No response"}])})}catch(ex){setMsgs(function(p){return p.concat([{r:"a",t:"Error: "+ex.message}])})}setQBusy(false)};
+try{var bl=await callAI(apiKey,"Concise intelligence analyst. 2-3 paragraphs. Never use HTML or citation tags.","Story: \""+selected.headline+"\". Question: \""+question+"\". Search and answer in plain text.");
+setMsgs(function(p){return p.concat([{r:"a",t:(bl.join("\n\n")||"No response").replace(/<\/?[a-z][^>]*>/gi,"")}])})}catch(ex){setMsgs(function(p){return p.concat([{r:"a",t:"Error: "+ex.message}])})}setQBusy(false)};
 
 ue(function(){if(chatEnd.current)chatEnd.current.scrollIntoView({behavior:"smooth"})},[msgs]);
 
 var playAudio=function(){try{if(!window.speechSynthesis)return;if(speaking){window.speechSynthesis.cancel();setSpeaking(false);return}setSpeaking(true);
-var hr=new Date().getHours();var greet=hr<12?"Good morning":"Good afternoon";
-var u=new SpeechSynthesisUtterance(greet+". Here's your intelligence briefing for "+today()+". "+stories.slice(0,5).map(function(s,i){return"Story "+(i+1)+". "+s.headline+". "+s.summary}).join(". . . ")+". . . That's your briefing. Tap any story to go deeper.");
-u.rate=1;u.onend=function(){setSpeaking(false)};u.onerror=function(){setSpeaking(false)};window.speechSynthesis.speak(u)}catch(ex){setSpeaking(false)}};
+var hr=new Date().getHours();var greet=hr<6?"Up late? Here's":hr<12?"Good morning. Here's":hr<17?"Good afternoon. Here's":"Good evening. Here's";
+var top=stories.filter(function(s){return(s.importance||3)>=4});var rest=stories.filter(function(s){return(s.importance||3)<4});
+var script=greet+" your intelligence briefing for "+today()+". ";
+if(top.length)script+=top.length+" major stor"+(top.length===1?"y":"ies")+" to know. . . "+top.map(function(s,i){return s.headline+". . "+s.summary}).join(". . . Next. . . ");
+if(rest.length)script+=". . . Also worth watching. . . "+rest.map(function(s){return s.headline}).join(". . ");
+script+=". . . That's your briefing. "+stories.length+" stories tracked. Tap any story to go deeper.";
+var u=new SpeechSynthesisUtterance(script);u.rate=0.95;u.onend=function(){setSpeaking(false)};u.onerror=function(){setSpeaking(false)};window.speechSynthesis.speak(u)}catch(ex){setSpeaking(false)}};
 
 var cats=["All"].concat(Array.from(new Set(stories.map(function(s){return s.category}))));
 var searchLow=search.toLowerCase();
